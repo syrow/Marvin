@@ -9,7 +9,7 @@
     "build": "node ace build",
     "dev": "node ace serve --watch",
     "d": "yarn install && node ace build --ignore-ts-errors && cd build && yarn install --production && cd ../ && pm2 start ecosystem.development.json",
-    "p": "yarn install && node ace build --ignore-ts-errors && node ace migration:run && yarn db:seed && cd build && yarn install --production && cd ../ && pm2 start ecosystem.production.json",
+    "p": "yarn install && node ace build --ignore-ts-errors && node ace migration:run && cd build && yarn install --production && cd ../ && pm2 start ecosystem.production.json",
     "test": "node ace test",
     "lint": "eslint .",
     "format": "prettier --write .",
