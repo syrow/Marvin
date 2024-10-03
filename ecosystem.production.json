@@ -8,7 +8,7 @@
           "autorestart": true,
           "watch": true,
           "env": {
-            "PORT": 3014,
+            "PORT": 3004,
             "TZ": "UTC",
             "HOST": "192.168.1.83",
             "LOG_LEVEL": "info",
