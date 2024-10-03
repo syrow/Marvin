@@ -1,0 +1,27 @@
+{
+      "apps": [
+        {
+          "name": "Syrow-Marvin Dev",
+          "script": "./build/bin/server.js",
+          "instances": 1,
+          "exec_mode": "cluster",
+          "autorestart": true,
+          "watch": true,
+          "env": {
+            "PORT": 3004,
+            "TZ": "UTC",
+            "HOST": "192.168.1.83",
+            "LOG_LEVEL": "info",
+            "APP_KEY": "9lol2rDFNC3ZSDyEfVve8_YcuUstx7hD",
+            "NODE_ENV": "development",
+            "SESSION_DRIVER": "cookie",
+            "BASE_URL": "https://192.168.1.83:3004",
+            "DB_HOST": "192.168.1.78",
+            "DB_PORT": "9008",
+            "DB_USER": "mysql",
+            "DB_PASSWORD": "a1g1YxcJ1Y4p5NrFl6M2SkRqCB0ODBuaFrz5RthE5EzutjwDGBbHeP0nR2bfqX6h",
+            "DB_DATABASE": "default"
+          }
+        }
+      ]
+    }
