@@ -20,7 +20,11 @@
             "DB_PORT": "9008",
             "DB_USER": "mysql",
             "DB_PASSWORD": "a1g1YxcJ1Y4p5NrFl6M2SkRqCB0ODBuaFrz5RthE5EzutjwDGBbHeP0nR2bfqX6h",
-            "DB_DATABASE": "default"
+            "DB_DATABASE": "default",
+            "SMTP_HOST": "smtp.mailtrap.io",
+            "SMTP_PORT": 2525,
+            "SMTP_USERNAME": "your-smtp-username",
+            "SMTP_PASSWORD": "your-smtp-password"
           }
         }
       ]
