@@ -1,9 +1,9 @@
 {
       "apps": [
         {
-          "name": "Syrow-Marvin Prod",
+          "name": "Syrow-Marvin Prod 3004",
           "script": "./build/bin/server.js",
-          "instances": "max",
+          "instances": 3,
           "exec_mode": "cluster",
           "autorestart": true,
           "watch": true,
