@@ -14,7 +14,7 @@ export default class MailController {
   // create user
   public async create({ request, response }: HttpContext) {
     const user = await check_access_token(request)
-    if (user.status == 'success') {
+    if (user.status === 'success') {
       try {
         const user_id = user.data?.user_id_fk || null
         const template_name = request.input('template_name')
@@ -67,17 +67,17 @@ export default class MailController {
 
   // send mail to queue
   public async send_mail_queue({ request, response }: HttpContext) {
+    console.log("request ", request);
+    
     const user = await check_api_key(request)
     if (user.status == 'success') {
       try {
         let body = await mail_data_validator.validate(request.all())
-        const query: any = {
+        let query: any = {
             hash: cuid(),
             template_id_fk: null,
             from_address: body.from,
             to_address: JSON.stringify(body.to),
-            cc: JSON.stringify(body.cc),
-            bcc: JSON.stringify(body.bcc),
             template_params: JSON.stringify(body.template_params),
             subject: body.subject,
             body: body.template_body || null,
@@ -87,6 +87,14 @@ export default class MailController {
             mail_provider: body.mail_provider,
             config: JSON.stringify(body.config),
             status: 1,
+        }
+
+        if(body.cc && body.cc.length > 0){
+          query['cc'] = JSON.stringify(body.cc)
+        }
+
+        if(body.bcc && body.bcc.length > 0){
+          query['bcc'] = JSON.stringify(body.bcc)
         }
 
         console.log(body)
@@ -162,8 +170,13 @@ export default class MailController {
             throw new Error("Message already sent")
         }else{
               const adapter = new Adapter(message_history.mail_provider, JSON.stringify(message_history.config))
-              const result = await adapter.send_mail(message_history)
-              return response.status(200).json(result)
+              const check_config = await adapter.validate_config()
+              if(check_config){
+                const result = await adapter.send_mail(message_history)
+                return response.status(200).json(result)
+              }else{
+                throw new Error("invalid config")
+              }
         }
       }else{
         throw new Error("invalid message hash")
@@ -190,8 +203,13 @@ export default class MailController {
             throw new Error("Message already sent")
         }else{
               const adapter = new Adapter(message_history.mail_provider, JSON.stringify(message_history.config))
-              const result = await adapter.send_mail(message_history)
-              return result
+              const check_config = await adapter.validate_config()
+              if(check_config){
+                const result = await adapter.send_mail(message_history)
+                return result
+              }else{
+                throw new Error("invalid config")
+              }
         }
       }else{
         throw new Error("invalid message hash")

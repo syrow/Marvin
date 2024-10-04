@@ -22,7 +22,8 @@ export default class KeysController {
                         return response.status(200).json({
                               "status_code":"200", 
                               "status":"success",
-                              "message": "Data saved successfully"
+                              "message": "Data saved successfully",
+                              "key": key
                         })
                   }else{
                         return response.status(400).json({

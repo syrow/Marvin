@@ -4,7 +4,7 @@ const create_user_validator = vine.compile(
   vine.object({
     name: vine.string().trim(),
     email: vine.string().trim().email(),
-    phone_number: vine.string().trim()
+    phone_number: vine.string().trim(),
   })
 )
 

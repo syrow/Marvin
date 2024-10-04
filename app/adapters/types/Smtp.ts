@@ -81,8 +81,9 @@ class Smtp{
               const template_body = await edge.renderRaw(message_body, body.template_params)
          
               // Replace placeholders in the template
-                  let messageId = cuid()
-                  messageId = messageId+"@syrow.in"
+            let messageId = cuid()
+            messageId = messageId+"@syrow.in"
+            
               const mailService = new MailService(config);
               const mailDetails = {
                 from: body.from_address,

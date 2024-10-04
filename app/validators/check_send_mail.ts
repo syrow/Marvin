@@ -16,7 +16,7 @@ const mail_data_validator = vine.compile(
     reply_to: vine.string().trim().email().optional(),
     priority: vine.enum(['low', 'medium', 'high']).optional(),
     retry: vine.number(),
-    mail_provider: vine.string().trim(),
+    mail_provider: vine.enum(['smtp']),
     config: vine.object({}).allowUnknownProperties()
   })
 )

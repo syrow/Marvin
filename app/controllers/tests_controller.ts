@@ -9,7 +9,7 @@ export default class TestsController {
             "url": "http://localhost:3335/test"
       }
 
-      edge.renderRawSync(, { username: 'virk' })
+      // edge.renderRawSync(, { username: 'virk' })
 
       const html_data = mjml(textView('email/verify_email_html', request_data)).html
       const body = {
