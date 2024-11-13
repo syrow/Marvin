@@ -75,7 +75,7 @@ class Smtp{
               }
               
               let message_body = template_message_body
-              if(detectTemplateType(message_body) == 'mjml') {
+              if(detectTemplateType(message_body) === 'mjml') {
                   message_body = mjml2html(message_body).html
               }
               const template_body = await edge.renderRaw(message_body, body.template_params)
@@ -92,7 +92,13 @@ class Smtp{
                 bcc: body.bcc,
                 subject: body.subject,
                 html: template_body,
-                messageId: messageId
+                messageId: messageId,
+                dsn: {
+                        id: messageId,
+                        return: 'full',
+                        notify: ['failure', 'delay', 'success'],
+                        recipient: 'ganguchimmad@gmail.com'
+                  }
               };
           
               const res = await mailService.sendMail(mailDetails);

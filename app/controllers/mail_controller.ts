@@ -67,10 +67,8 @@ export default class MailController {
 
   // send mail to queue
   public async send_mail_queue({ request, response }: HttpContext) {
-    console.log("request ", request);
-    
     const user = await check_api_key(request)
-    if (user.status == 'success') {
+    if (user.status === 'success') {
       try {
         let body = await mail_data_validator.validate(request.all())
         let query: any = {
@@ -166,7 +164,7 @@ export default class MailController {
       const message_history = await get_template_body(body.hash)
                  
       if(message_history){        
-        if(message_history!.status == HistoryStatus.Completed) {
+        if(message_history!.status === HistoryStatus.Completed) {
             throw new Error("Message already sent")
         }else{
               const adapter = new Adapter(message_history.mail_provider, JSON.stringify(message_history.config))
@@ -199,7 +197,7 @@ export default class MailController {
       const message_history = await get_template_body(body.hash)
                  
       if(message_history){        
-        if(message_history!.status == HistoryStatus.Completed) {
+        if(message_history!.status === HistoryStatus.Completed) {
             throw new Error("Message already sent")
         }else{
               const adapter = new Adapter(message_history.mail_provider, JSON.stringify(message_history.config))
