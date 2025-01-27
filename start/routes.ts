@@ -16,7 +16,10 @@ router.on('/').render('pages/home', {
   base_url: env.get('BASE_URL'),
 })
 
+
 router.post('/test', [TestsController, 'sendEmail'])
+
+router.post('/test1', [TestsController, 'test'])
 
 import './routes/account.js'
 
