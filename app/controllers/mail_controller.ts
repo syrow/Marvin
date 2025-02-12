@@ -11,7 +11,30 @@ import { HistoryStatus } from '../types/mail_types.js'
 import { get_template_body } from '../Helpers/MailHelper.js'
 
 export default class MailController {
-  // create user
+  // get templates
+  public async get({ request, response }: HttpContext) {
+    const user = await check_access_token(request)
+    if (user.status === 'success') {
+      try {
+        const templates = await MailTemplate.query()
+          .andWhere('status', 1)
+
+        return response.status(200).json({
+          status_code: '200',
+          status: 'success',
+          message: 'Data fetched successfully',
+          data: templates,
+        })
+      } catch (error) {
+        error_logs('accounts_controller', 'create', { error: error.message })
+        return error
+      }
+    } else {
+      return response.status(400).json(user)
+    }
+  }
+
+  // create template
   public async create({ request, response }: HttpContext) {
     const user = await check_access_token(request)
     if (user.status === 'success') {
@@ -65,38 +88,88 @@ export default class MailController {
     }
   }
 
+  // edit template
+  public async update({ request, params, response }: HttpContext) {
+    const user = await check_access_token(request)
+    if (user.status === 'success') {
+      // try {
+        const user_id = user.data?.user_id_fk || null
+        const template_id = params.id
+        const template_name = request.input('template_name')
+        const template_body = request.input('template_body')
+       
+        const check_duplicate = await MailTemplate.query()
+          .where('template_name', template_name)
+          .andWhere('user_id_fk', user_id!)
+          .andWhereNot('id', template_id)
+          .andWhere('status', 1)
+          .first()
+   
+        if (check_duplicate) {
+          return response.status(400).json({
+            status_code: '400',
+            status: 'duplicate',
+            message: 'Template already existed',
+          })
+        } else {
+          const template = await MailTemplate.findByOrFail("id", template_id)
+          
+          if (template) {
+            if(template_name){
+              template.template_name = template_name
+            }
+
+            if (template_body) {
+              template.template_body = template_body
+            }
+
+            const res = await template.save()
+            if (res.$isPersisted) {
+              return response.status(200).json({
+                status_code: '200',
+                status: 'success',
+                message: 'Data saved successfully',
+                data: res,
+              })
+            } else {
+              return response.status(400).json({
+                status_code: '400',
+                status: 'error',
+                message: 'Something went wrong, Please try again',
+              })
+            }
+          }else{
+            return response.status(400).json({
+              status_code: '400',
+              status: 'error',
+              message: 'Unable to find template',
+            })
+          }
+        }
+      // } catch (error) {
+      //   error_logs('accounts_controller', 'create', { error: error.message })
+      //   return response.status(400).json({
+      //     status_code: '400',
+      //     status: 'error',
+      //     message: 'Something went wrong, Please try again',
+      //     "error": error
+      //   })
+      // }
+    } else {
+      return response.status(400).json(user)
+    }
+  }
+
   // send mail to queue
   public async send_mail_queue({ request, response }: HttpContext) {
     const user = await check_api_key(request)
     if (user.status === 'success') {
       try {
         let body = await mail_data_validator.validate(request.all())
-        let query: any = {
-            hash: cuid(),
-            template_id_fk: null,
-            from_address: body.from,
-            to_address: JSON.stringify(body.to),
-            template_params: JSON.stringify(body.template_params),
-            subject: body.subject,
-            body: body.template_body || null,
-            reply_to: body.reply_to || null,
-            priority: body.priority,
-            retry: body.retry,
-            mail_provider: body.mail_provider,
-            config: JSON.stringify(body.config),
-            status: 1,
-        }
+        const to = body.to
+        let template_params:any = body.template_params
 
-        if(body.cc && body.cc.length > 0){
-          query['cc'] = JSON.stringify(body.cc)
-        }
-
-        if(body.bcc && body.bcc.length > 0){
-          query['bcc'] = JSON.stringify(body.bcc)
-        }
-
-        console.log(body)
-
+        let template_id = null
         if (body.template_identifier) {
           const template = await MailTemplate.query()
             .where('hash', body.template_identifier)
@@ -105,40 +178,76 @@ export default class MailController {
             .first()
 
           if (template) {
-            query.template_id_fk = template.id
-          } else {
+            template_id = template.id
+          }else{
             return response
               .status(400)
               .json({ status_code: 400, status: 'error', message: 'Mail template not found' })
           }
         }
-
-        const res = await MessageHistory.create(query)
-        if (res.$isPersisted) {
-          let message_body = {
-            hash: res.hash            
-          }
+              
+        let message_ids:any = []
+        for(let item of to){
+          console.log(item);
           
-          // Send to the queue
-          this.send_mail_adapter(message_body)
+          template_params["user_email"] = item
+          let query: any = {
+              hash: cuid(),
+              template_id_fk: template_id,
+              from_address: body.from,
+              to_address: JSON.stringify([item]),
+              template_params: JSON.stringify(template_params),
+              subject: body.subject,
+              body: body.template_body || null,
+              reply_to: body.reply_to || null,
+              priority: body.priority,
+              retry: body.retry,
+              mail_provider: body.mail_provider,
+              config: JSON.stringify(body.config),
+              status: 1,
+          }
 
-          await MessageHistory.query().where('id', res.id).update({ status: 2 })
+          if(body.cc && body.cc.length > 0){
+            query['cc'] = JSON.stringify(body.cc)
+          }
+
+          if(body.bcc && body.bcc.length > 0){
+            query['bcc'] = JSON.stringify(body.bcc)
+          }
+
+          console.log(body)
+
+          const res = await MessageHistory.create(query)
+          if (res.$isPersisted) {
+            let message_body = {
+              hash: res.hash            
+            }
+
+            message_ids = [...message_ids, res.hash]
+            // Send to the queue
+            this.send_mail_adapter(message_body)
+
+            await MessageHistory.query().where('id', res.id).update({ status: 2 })
+          }
+        }
+
+        if(message_ids.length > 0 ){
           return response.status(200).json({
             status_code: 200,
             status: 'success',
             message: 'Mail accepted successfully',
             data: {
-              message_id: res.hash,
+              message_id: message_ids,
             },
           })
-        } else {
+        }else{
           return response
-            .status(400)
-            .json({
-              status_code: 400,
-              status: 'error',
-              message: 'Error while inserting message history, Please try agaian',
-            })
+          .status(400)
+          .json({
+            status_code: 400,
+            status: 'error',
+            message: 'Error while inserting message history, Please try agaian',
+          })
         }
       } catch (error) {
         await error_logs('mail_controller', 'send_mail_queue', { error: error.message })

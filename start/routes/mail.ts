@@ -3,7 +3,11 @@ import router from '@adonisjs/core/services/router'
 
 router.group(()=>{
       router.group(()=>{
+            router.get("/", [MailController, "get"])
+            
             router.post("/", [MailController, "create"])
+
+            router.put("/:id", [MailController, "update"])
 
             router.post("send", [MailController, "send_mail_queue"])
 

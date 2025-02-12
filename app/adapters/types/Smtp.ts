@@ -78,31 +78,32 @@ class Smtp{
               if(detectTemplateType(message_body) === 'mjml') {
                   message_body = mjml2html(message_body).html
               }
+
               const template_body = await edge.renderRaw(message_body, body.template_params)
          
               // Replace placeholders in the template
-            let messageId = cuid()
-            messageId = messageId+"@syrow.in"
+                  let messageId = cuid()
+                  messageId = messageId+"@syrow.in"
+                  
+                  const mailService = new MailService(config);
+                  const mailDetails = {
+                  from: body.from_address,
+                  to: body.to_address,
+                  cc: body.cc,
+                  bcc: body.bcc,
+                  subject: body.subject,
+                  html: template_body,
+                  messageId: messageId,
+                  dsn: {
+                              id: messageId,
+                              return: 'full'
+                              // notify: ['failure', 'delay', 'success'],
+                              // recipient: 'ganguchimmad@gmail.com'
+                        }
+                  };
             
-              const mailService = new MailService(config);
-              const mailDetails = {
-                from: body.from_address,
-                to: body.to_address,
-                cc: body.cc,
-                bcc: body.bcc,
-                subject: body.subject,
-                html: template_body,
-                messageId: messageId,
-                dsn: {
-                        id: messageId,
-                        return: 'full',
-                        notify: ['failure', 'delay', 'success'],
-                        recipient: 'ganguchimmad@gmail.com'
-                  }
-              };
-          
-              const res = await mailService.sendMail(mailDetails);
-              console.log("res ", res);
+                  const res = await mailService.sendMail(mailDetails);
+                  console.log("res ", res);
               
               const message_history = await MessageHistory.findByOrFail("hash", body.hash)
               message_history.status = 4
