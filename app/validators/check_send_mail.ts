@@ -30,4 +30,5 @@ const mail_data_validator = vine.compile(
   })
 )
 
+
 export default mail_data_validator

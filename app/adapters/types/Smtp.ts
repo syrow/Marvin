@@ -142,6 +142,7 @@ class Smtp{
                         }
                   }
 
+                  
                   const mailService = new MailService(config);
                   const mailDetails = {
                         from: body.from_address,

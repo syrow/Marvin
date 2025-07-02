@@ -29,7 +29,7 @@ export default class MessageHistory extends BaseModel {
   declare template_params: string|any
 
   @column()
-  declare attachments: string
+  declare attachments: string|null
 
   @column()
   declare subject: string
