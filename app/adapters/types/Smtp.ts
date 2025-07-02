@@ -69,7 +69,7 @@ class Smtp{
               }else{
                   template_message_body = body.body
               }
-              
+         
               if (!template_message_body) {
                 return { status_code: 404, status: "error", message: 'Template not found', data: null };
               }
@@ -79,31 +79,89 @@ class Smtp{
                   message_body = mjml2html(message_body).html
               }
 
+            //   console.log("message_body ", message_body);
+              
               const template_body = await edge.renderRaw(message_body, body.template_params)
-         
               // Replace placeholders in the template
                   let messageId = cuid()
                   messageId = messageId+"@syrow.in"
                   
+                  // Process attachments from URLs using axios
+                  let attachments = [];
+                  if (body.attachments && Array.isArray(body.attachments)) {
+                        const axios = require('axios');
+
+                        for (const attachment of body.attachments) {
+                        try {
+                              if (attachment.url) {
+                                    // Fetch file from URL with axios
+                                    const response = await axios.get(attachment.url, {
+                                    responseType: 'arraybuffer',
+                                    timeout: 30000, // 30 second timeout
+                                    headers: {
+                                          'User-Agent': 'Mozilla/5.0 (compatible; EmailService/1.0)'
+                                    }
+                                    });
+                                    
+                                    // Extract filename from URL or use provided filename
+                                    let filename = attachment.filename;
+                                    if (!filename) {
+                                    // Try to get filename from Content-Disposition header
+                                    const contentDisposition = response.headers['content-disposition'];
+                                    if (contentDisposition) {
+                                          const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                                          if (filenameMatch) {
+                                                filename = filenameMatch[1].replace(/['"]/g, '');
+                                          }
+                                    }
+                                    
+                                    // Fallback to URL path
+                                    if (!filename) {
+                                          const urlPath = new URL(attachment.url).pathname;
+                                          filename = urlPath.split('/').pop() || 'attachment';
+                                    }
+                                    }
+                                    
+                                    const attachmentConfig = {
+                                    filename: filename,
+                                    content: Buffer.from(response.data),
+                                    contentType: attachment.contentType || response.headers['content-type'] || 'application/octet-stream'
+                                    };
+                                    
+                                    // Add cid for inline images
+                                    if (attachment.cid) {
+                                    attachmentConfig.cid = attachment.cid;
+                                    }
+                                    
+                                    attachments.push(attachmentConfig);
+                              }
+                        } catch (attachmentError) {
+                              console.error(`Error processing attachment ${attachment.url}:`, attachmentError.message);
+                              // Continue with other attachments even if one fails
+                        }
+                        }
+                  }
+
                   const mailService = new MailService(config);
                   const mailDetails = {
-                  from: body.from_address,
-                  to: body.to_address,
-                  cc: body.cc,
-                  bcc: body.bcc,
-                  subject: body.subject,
-                  html: template_body,
-                  messageId: messageId,
-                  dsn: {
-                              id: messageId,
-                              return: 'full'
-                              // notify: ['failure', 'delay', 'success'],
-                              // recipient: 'ganguchimmad@gmail.com'
-                        }
+                        from: body.from_address,
+                        to: body.to_address,
+                        cc: body.cc,
+                        bcc: body.bcc,
+                        subject: body.subject,
+                        html: template_body,
+                        messageId: messageId,
+                        attachments: attachments, // Add attachments array
+                        dsn: {
+                                    id: messageId,
+                                    return: 'full'
+                                    // notify: ['failure', 'delay', 'success'],
+                                    // recipient: 'ganguchimmad@gmail.com'
+                              }
                   };
             
                   const res = await mailService.sendMail(mailDetails);
-                  console.log("res ", res);
+                  // console.log("res ", res);
               
               const message_history = await MessageHistory.findByOrFail("hash", body.hash)
               message_history.status = 4

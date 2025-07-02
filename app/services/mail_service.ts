@@ -6,6 +6,8 @@ class MailService {
 
   constructor(config: any) {
     this.transporter = nodemailer.createTransport(config)
+    console.log("this.transporter ", this.transporter);
+    
   }
 
   async sendMail(mailDetails:any) {
@@ -25,3 +27,4 @@ class MailService {
 }
 
 export default MailService
+
