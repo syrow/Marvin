@@ -87,6 +87,7 @@ export default class MailController {
       return response.status(400).json(user)
     }
   }
+  
 
   // edit template
   public async update({ request, params, response }: HttpContext) {
@@ -218,7 +219,7 @@ export default class MailController {
           if(body.attachments && body.attachments.length > 0){
             query['attachments'] = JSON.stringify(body.attachments)
           }
-          
+
 
           const res = await MessageHistory.create(query)
           if (res.$isPersisted) {
