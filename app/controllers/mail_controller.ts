@@ -188,8 +188,7 @@ export default class MailController {
               
         let message_ids:any = []
         for(let item of to){
-          console.log(item);
-          
+                    
           template_params["user_email"] = item
           let query: any = {
               hash: cuid(),
@@ -197,6 +196,7 @@ export default class MailController {
               from_address: body.from,
               to_address: JSON.stringify([item]),
               template_params: JSON.stringify(template_params),
+              
               subject: body.subject,
               body: body.template_body || null,
               reply_to: body.reply_to || null,
@@ -215,7 +215,10 @@ export default class MailController {
             query['bcc'] = JSON.stringify(body.bcc)
           }
 
-          console.log(body)
+          if(body.attachments && body.attachments.length > 0){
+            query['attachments'] = JSON.stringify(body.attachments)
+          }
+          
 
           const res = await MessageHistory.create(query)
           if (res.$isPersisted) {
