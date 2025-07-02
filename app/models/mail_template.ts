@@ -23,9 +23,6 @@ export default class MailTemplate extends BaseModel {
   declare template_body: string
 
   @column()
-  declare attachments: string
-
-  @column()
   declare status: number
 
   @column()
