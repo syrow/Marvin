@@ -5,6 +5,7 @@ import mjml2html from 'mjml'
 import MessageHistory from '#models/message_history'
 import edge from 'edge.js'
 import { cuid } from '@adonisjs/core/helpers'
+import axios from 'axios'
 
 interface smtp_config {
       host: string,
@@ -89,8 +90,6 @@ class Smtp{
                   // Process attachments from URLs using axios
                   let attachments = [];
                   if (body.attachments && Array.isArray(body.attachments)) {
-                        const axios = require('axios');
-
                         for (const attachment of body.attachments) {
                         try {
                               if (attachment.url) {
@@ -123,14 +122,15 @@ class Smtp{
                                     }
                                     
                                     const attachmentConfig = {
-                                    filename: filename,
-                                    content: Buffer.from(response.data),
-                                    contentType: attachment.contentType || response.headers['content-type'] || 'application/octet-stream'
+                                          filename: filename,
+                                          cid: attachment.cid || null, // Optional CID for inline images
+                                          content: Buffer.from(response.data),
+                                          contentType: attachment.contentType || response.headers['content-type'] || 'application/octet-stream'
                                     };
                                     
                                     // Add cid for inline images
                                     if (attachment.cid) {
-                                    attachmentConfig.cid = attachment.cid;
+                                          attachmentConfig.cid = attachment.cid;
                                     }
                                     
                                     attachments.push(attachmentConfig);
