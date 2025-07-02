@@ -218,6 +218,7 @@ export default class MailController {
           if(body.attachments && body.attachments.length > 0){
             query['attachments'] = JSON.stringify(body.attachments)
           }
+          
 
           const res = await MessageHistory.create(query)
           if (res.$isPersisted) {
