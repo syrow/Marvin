@@ -54,7 +54,7 @@ class Smtp{
 
       async send_mail(body: MessageHistory) {
             try {
-              const config = body.config;
+              const config = typeof body.config === 'string' ? JSON.parse(body.config) : body.config;
               // Function to replace placeholders in the template
             
               // Function to detect template type
@@ -85,8 +85,15 @@ class Smtp{
               const template_body = await edge.renderRaw(message_body, body.template_params)
               // Replace placeholders in the template
                   let messageId = cuid()
-                  messageId = messageId+"@syrow.in"
+                  console.log("came to send mail", config);
                   
+                  // const config_data = JSON.parse(config)
+                  if (config.host) {
+                   messageId = `${messageId}@${config.host}`
+                  }else{
+                        messageId = `${messageId}`
+                  }
+
                   // Process attachments from URLs using axios
                   let attachments = [];
                   if (body.attachments && Array.isArray(body.attachments)) {
