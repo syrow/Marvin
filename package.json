@@ -66,9 +66,9 @@
     "@adonisjs/vite": "^3.0.0",
     "@vinejs/vine": "^2.1.0",
     "axios": "^1.10.0",
-    "edge.js": "^6.0.2",
+    "edge.js": "^6.5.0",
     "luxon": "^3.5.0",
-    "mjml": "^4.15.3",
+    "mjml": "^4.18.0",
     "mysql2": "^3.11.3",
     "nodemailer": "^6.9.15",
     "reflect-metadata": "^0.2.2"
@@ -92,4 +92,3 @@
   },
   "prettier": "@adonisjs/prettier-config"
 }
-
