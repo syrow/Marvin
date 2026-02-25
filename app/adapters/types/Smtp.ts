@@ -76,13 +76,16 @@ class Smtp{
               }
               
               let message_body = template_message_body
+              let template_body = await edge.renderRaw(message_body, body.template_params)
+              message_body = template_body
               if(detectTemplateType(message_body) === 'mjml') {
                   message_body = mjml2html(message_body).html
               }
 
+              template_body = await edge.renderRaw(message_body, body.template_params)
+
             //   console.log("message_body ", message_body);
               
-              const template_body = await edge.renderRaw(message_body, body.template_params)
               // Replace placeholders in the template
                   let messageId = cuid()
                   console.log("came to send mail", config);
