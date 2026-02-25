@@ -3,14 +3,14 @@ FROM node:20.12.2-alpine3.18 AS base
 # All deps stage
 FROM base AS deps
 WORKDIR /app
-RUN yarn config set registry https://registry.npmmirror.com/
+# RUN yarn config set registry https://registry.npmmirror.com/
 ADD package.json yarn.lock ./
 RUN yarn install --frozen-lockfile
 
 # Production only deps stage
 FROM base AS production-deps
 WORKDIR /app
-RUN yarn config set registry https://registry.npmmirror.com/
+# RUN yarn config set registry https://registry.npmmirror.com/
 ADD package.json yarn.lock ./
 RUN yarn install --frozen-lockfile --production
 
